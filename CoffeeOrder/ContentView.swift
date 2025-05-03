@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     
     @EnvironmentObject private var model: CoffeeModel
+    @State private var isPresented = false
     
     private func populateOrders() async {
         do {
@@ -20,16 +21,29 @@ struct ContentView: View {
     }
     
     var body: some View {
-        VStack {
-            if model.orders.isEmpty {
-                Text("No orders are found").accessibilityIdentifier("noOrdersText")
-            } else {
-                List(model.orders) { order in
-                    OrderCellView(order: order)
+        NavigationStack{
+            VStack {
+                if model.orders.isEmpty {
+                    Text("No orders are found")
+                        .accessibilityIdentifier("noOrdersText")
+                } else {
+                    List(model.orders) { order in
+                        OrderCellView(order: order)
+                    }
+                }
+            }.task {
+                await populateOrders()
+            }
+            .sheet(isPresented: $isPresented, content: {
+                AddCoffeeView()
+            })
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Add New Order") {
+                        isPresented = true
+                    }.accessibilityIdentifier("addNewOrderButton")
                 }
             }
-        }.task {
-            await populateOrders()
         }
     }
 }
