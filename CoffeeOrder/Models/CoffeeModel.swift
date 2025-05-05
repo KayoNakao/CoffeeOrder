@@ -17,6 +17,11 @@ class CoffeeModel: ObservableObject {
         self.webService = webService
     }
     
+    func orderById(_ id: Int) -> Order? {
+        let order = orders.first(where: { $0.id == id })
+        return order
+    }
+    
     func populateOrders() async throws {
         orders = try await webService.getOrders()
     }
@@ -29,5 +34,13 @@ class CoffeeModel: ObservableObject {
     func deleteOrder(_ orderId: Int) async throws {
         let deleteOrder = try await webService.deleteOrder(orderId)
         orders = orders.filter{ $0.id != deleteOrder.id}
+    }
+    
+    func updateOrder(_ order: Order) async throws {
+        let updatedOrder = try await webService.updateOrder(order)
+        guard let index = orders.firstIndex(where: { $0.id == updatedOrder.id }) else {
+            throw CoffeeOrderError.invalidOrderId
+        }
+        orders[index] = updatedOrder
     }
 }
