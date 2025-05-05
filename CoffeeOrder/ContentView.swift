@@ -20,6 +20,21 @@ struct ContentView: View {
         }
     }
     
+    private func deleteOrder(_ indexSet: IndexSet) {
+        indexSet.forEach { index in
+            guard let orderId = model.orders[index].id else {
+                return
+            }
+            Task {
+                do {
+                    try await model.deleteOrder(orderId)
+                } catch {
+                    print(error)
+                }
+            }
+        }
+    }
+    
     var body: some View {
         NavigationStack{
             VStack {
@@ -27,9 +42,11 @@ struct ContentView: View {
                     Text("No orders are found")
                         .accessibilityIdentifier("noOrdersText")
                 } else {
-                    List(model.orders) { order in
-                        OrderCellView(order: order)
-                    }
+                    List {
+                        ForEach(model.orders) { order in
+                            OrderCellView(order: order)
+                        }.onDelete(perform: deleteOrder)
+                    }.accessibilityIdentifier("orderList")
                 }
             }.task {
                 await populateOrders()
