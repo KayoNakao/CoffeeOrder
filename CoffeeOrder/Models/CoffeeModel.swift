@@ -29,6 +29,7 @@ class CoffeeModel: ObservableObject {
     func placeOrder(_ order: Order) async throws {
         let newOrder = try await webService.placeOrder(order: order)
         orders.append(newOrder)
+        print("new Order", newOrder.id)
     }
     
     func deleteOrder(_ orderId: Int) async throws {

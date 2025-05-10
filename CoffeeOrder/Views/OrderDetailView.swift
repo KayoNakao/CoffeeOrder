@@ -13,6 +13,7 @@ struct OrderDetailView: View {
     
     let orderId: Int
     @State private var isPresented = false
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         
@@ -30,7 +31,14 @@ struct OrderDetailView: View {
                 HStack {
                     Spacer()
                     Button("Delete Order", role: .destructive) {
-                        
+                        Task {
+                            do {
+                                try await model.deleteOrder(orderId)
+                                dismiss()
+                            } catch {
+                                print(error)
+                            }
+                        }
                     }
                     Spacer(minLength: 10)
                     Button("Edit Order") {
@@ -38,7 +46,7 @@ struct OrderDetailView: View {
                     }.accessibilityIdentifier("editOrderButton")
                     Spacer()
                 }.sheet(isPresented: $isPresented) {
-                    AddCoffeeView()
+                    AddCoffeeView(order: order)
                 }
                 
                 Spacer()
@@ -47,7 +55,7 @@ struct OrderDetailView: View {
     }
 }
 
-#Preview {
-    var config = Configuration()
-    OrderDetailView(orderId: 1).environmentObject(CoffeeModel(webService: WebService(baseURL: config.environment.baseURL)))
-}
+//#Preview {
+//    var config = Configuration()
+//    OrderDetailView(orderId: 1).environmentObject(CoffeeModel(webService: WebService(baseURL: config.environment.baseURL)))
+//}
