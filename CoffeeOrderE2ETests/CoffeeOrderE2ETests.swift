@@ -7,6 +7,79 @@
 
 import XCTest
 
+final class when_updating_an_existing_order: XCTestCase {
+    
+    private var app: XCUIApplication!
+    
+    override func setUp() {
+        
+        app = XCUIApplication()
+        continueAfterFailure = false
+        app.launchEnvironment = ["ENV": "TEST"]
+        app.launch()
+        
+        //Go to Add Coffee View
+        app.buttons["addNewOrderButton"].tap()
+        //Fill out the text feilds
+        let nameTextField = app.textFields["name"]
+        let coffeeNameTextField = app.textFields["coffeeName"]
+        let priceTextField = app.textFields["price"]
+        
+        let exists = nameTextField.waitForExistence(timeout: 5)
+        XCTAssertTrue(exists, "TextField didn't appear in time")
+        
+        nameTextField.tap()
+        nameTextField.typeText("Mike")
+        
+        coffeeNameTextField.tap()
+        coffeeNameTextField.typeText("Hot Coffee")
+        
+        priceTextField.tap()
+        priceTextField.typeText("3.50")
+        
+        //Place order
+        let placeOrderButton = app.buttons["placeOrderButton"]
+        placeOrderButton.tap()
+    }
+    
+    func test_should_update_order() {
+        
+        let orderList = app.collectionViews["orderList"]
+        orderList.buttons["orderNameText-coffeeNameAndSizeText-coffeePriceText"].tap()
+        
+        app.buttons["editOrderButton"].tap()
+        
+        let nameTextField = app.textFields["name"]
+        let coffeeNameTextField = app.textFields["coffeeName"]
+        let priceTextFiled = app.textFields["price"]
+        let placeOrderButton = app.buttons["placeOrderButton"]
+        
+        let _ = nameTextField.waitForExistence(timeout: 2.0)
+        nameTextField.tap(withNumberOfTaps: 2, numberOfTouches: 1)
+        nameTextField.typeText("Mike Edit")
+        
+        let _ = coffeeNameTextField.waitForExistence(timeout: 2)
+        coffeeNameTextField.tap(withNumberOfTaps: 2, numberOfTouches: 1)
+        coffeeNameTextField.typeText("Hot Coffee Edit")
+        
+        let _ = priceTextFiled.waitForExistence(timeout: 2)
+        priceTextFiled.tap(withNumberOfTaps: 2, numberOfTouches: 1)
+        priceTextFiled.typeText("1.50")
+        
+        placeOrderButton.tap()
+        
+        XCTAssertEqual("Hot Coffee Edit", app.staticTexts["coffeeNameText"].label)
+        
+    }
+    
+    override class func tearDown() {
+        Task {
+            guard let url = URL(string: "/test/clear-orderes", relativeTo: AppEnvironment.test.baseURL) else { return }
+            let (_, _) = try! await URLSession.shared.data(from: url)
+        }
+    }
+}
+
 final class when_deleting_an_order: XCTestCase {
     
     private var app: XCUIApplication!
